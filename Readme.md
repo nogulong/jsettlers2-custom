@@ -71,6 +71,12 @@ Over time, more docs will be written. If you are interested in helping
 write documentation please contact the development team from our github page.
 For developer docs, see [Readme.developer.md](doc/Readme.developer.md).
 
+**Third-party robot integration:**
+- [Rust Agent Integration Guide (Japanese)](doc/Rust-Agent-Integration-Guide.ja.md) - 
+  Comprehensive guide for integrating Rust-based agents with JSettlers
+- [Rust Agent Quick Start (Japanese)](doc/Rust-Agent-Quick-Start.ja.md) - 
+  Quick start guide for connecting Rust bots to JSettlers server
+
 If you downloaded a JSettlers JAR file without attached documentation,
 the official location of this Readme and the docs is online at
 https://github.com/jdmonin/JSettlers2/blob/main/Readme.md .
