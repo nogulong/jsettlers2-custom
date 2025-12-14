@@ -3,10 +3,15 @@ JSettlersプロトコル用のユーティリティ関数
 """
 import struct
 import socket
+import logging
 
 # デフォルトのバージョン情報
-DEFAULT_VERSION_NUM = "2500"
-DEFAULT_VERSION_STR = "2.5.00"
+# JSettlersサーバーとの互換性のため、バージョン 2.5.00 (2500) を使用
+DEFAULT_VERSION_NUM = "2500"  # 数値形式のバージョン (major*1000 + minor*100 + patch)
+DEFAULT_VERSION_STR = "2.5.00"  # 文字列形式のバージョン
+
+# ロガーの設定（モジュールレベル）
+logger = logging.getLogger(__name__)
 
 # Message type code to name mapping (from SOCMessage.java)
 # ボットが受信する可能性のある主要なメッセージタイプ
@@ -158,27 +163,41 @@ def parse_message(message: str) -> dict:
         または {"type": "GAMESTATE", "game": "test", "state": "15"}
     """
     # 数値形式のメッセージをチェック（例: "9998|..."）
-    if '|' in message:
-        parts = message.split('|', 1)
-        if parts[0].isdigit():
-            msg_code = int(parts[0])
-            msg_type = MESSAGE_TYPES.get(msg_code)
-            
-            if msg_type is None:
-                # 未知のメッセージタイプの場合はログに記録できるように情報を保持
-                msg_type = f"UNKNOWN_{msg_code}"
-                # デバッグ用（必要に応じてコメント解除）
-                # import sys
-                # print(f"Warning: Unknown message type {msg_code}: {message[:100]}", file=sys.stderr)
-            
-            result = {
-                "type": msg_type,
-                "code": msg_code,
-                "data": parts[1] if len(parts) > 1 else ""
-            }
-            return result
+    if _is_numeric_message(message):
+        return _parse_numeric_message(message)
     
     # テキスト形式のメッセージ（例: "GAMESTATE:game=test|state=15"）
+    return _parse_text_message(message)
+
+
+def _is_numeric_message(message: str) -> bool:
+    """メッセージが数値形式かどうかを判定"""
+    if '|' not in message:
+        return False
+    msg_type = message.split('|', 1)[0]
+    return msg_type.isdigit()
+
+
+def _parse_numeric_message(message: str) -> dict:
+    """数値形式のメッセージをパース"""
+    parts = message.split('|', 1)
+    msg_code = int(parts[0])
+    msg_type = MESSAGE_TYPES.get(msg_code)
+    
+    if msg_type is None:
+        # 未知のメッセージタイプの場合はログに記録
+        msg_type = f"UNKNOWN_{msg_code}"
+        logger.warning(f"Unknown message type {msg_code}: {message[:100]}")
+    
+    return {
+        "type": msg_type,
+        "code": msg_code,
+        "data": parts[1] if len(parts) > 1 else ""
+    }
+
+
+def _parse_text_message(message: str) -> dict:
+    """テキスト形式のメッセージをパース"""
     if ':' not in message:
         return {"type": message}
     
