@@ -4,21 +4,93 @@ JSettlersプロトコル用のユーティリティ関数
 import struct
 import socket
 
+# デフォルトのバージョン情報
+DEFAULT_VERSION_NUM = "2500"
+DEFAULT_VERSION_STR = "2.5.00"
+
 # Message type code to name mapping (from SOCMessage.java)
+# ボットが受信する可能性のある主要なメッセージタイプ
 MESSAGE_TYPES = {
-    1003: "CHANNELS",
-    1019: "GAMES",
+    # 認証・接続関連
+    999: "AUTHREQUEST",
+    1000: "NULLMESSAGE",
     1020: "JOINCHANNELAUTH",
     1021: "JOINGAMEAUTH",
     1022: "IMAROBOT",
     1023: "BOTJOINGAMEREQUEST",
+    1059: "REJECTCONNECTION",
+    1071: "UPDATEROBOTPARAMS",
+    9998: "VERSION",
+    9999: "SERVERPING",
+    
+    # チャンネル関連
+    1001: "NEWCHANNEL",
+    1002: "CHANNELMEMBERS",
+    1003: "CHANNELS",
+    1004: "JOINCHANNEL",
+    1005: "CHANNELTEXTMSG",
+    1006: "LEAVECHANNEL",
+    1007: "DELETECHANNEL",
+    1008: "LEAVEALL",
+    
+    # ゲーム関連
+    1013: "JOINGAME",
+    1015: "DELETEGAME",
+    1016: "NEWGAME",
+    1017: "GAMEMEMBERS",
+    1018: "STARTGAME",
+    1019: "GAMES",
+    1079: "NEWGAMEWITHOPTIONS",
+    1078: "NEWGAMEWITHOPTIONSREQUEST",
+    
+    # ゲームプレイ
+    1009: "PUTPIECE",
+    1010: "GAMETEXTMSG",
+    1011: "LEAVEGAME",
+    1012: "SITDOWN",
     1024: "PLAYERELEMENT",
     1025: "GAMESTATE",
     1026: "TURN",
     1028: "DICERESULT",
-    1071: "UPDATEROBOTPARAMS",
-    9998: "VERSION",
-    9999: "SERVERPING",
+    1029: "DISCARDREQUEST",
+    1030: "ROLLDICEREQUEST",
+    1031: "ROLLDICE",
+    1032: "ENDTURN",
+    1033: "DISCARD",
+    1034: "MOVEROBBER",
+    1035: "CHOOSEPLAYER",
+    1036: "CHOOSEPLAYERREQUEST",
+    1037: "REJECTOFFER",
+    1038: "CLEAROFFER",
+    1039: "ACCEPTOFFER",
+    1040: "BANKTRADE",
+    1041: "MAKEOFFER",
+    1042: "CLEARTRADEMSG",
+    1043: "BUILDREQUEST",
+    1044: "CANCELBUILDREQUEST",
+    1045: "BUYDEVCARDREQUEST",
+    1046: "DEVCARDACTION",
+    1047: "DEVCARDCOUNT",
+    1048: "SETPLAYEDDEVCARD",
+    1049: "PLAYDEVCARDREQUEST",
+    1052: "PICKRESOURCES",
+    1053: "PICKRESOURCETYPE",
+    1054: "FIRSTPLAYER",
+    1055: "SETTURN",
+    1056: "ROBOTDISMISS",
+    1057: "POTENTIALSETTLEMENTS",
+    1066: "LONGESTROAD",
+    1067: "LARGESTARMY",
+    1069: "STATUSMESSAGE",
+    1072: "ROLLDICEPROMPT",
+    1086: "PLAYERELEMENTS",
+    1089: "SIMPLEREQUEST",
+    1090: "SIMPLEACTION",
+    1094: "REMOVEPIECE",
+    1099: "SETSPECIALITEM",
+    1101: "SCENARIOINFO",
+    1102: "ROBBERYRESULT",
+    10001: "REVEALFOGHEX",
 }
 
 def write_java_utf(sock: socket.socket, message: str):
@@ -90,7 +162,15 @@ def parse_message(message: str) -> dict:
         parts = message.split('|', 1)
         if parts[0].isdigit():
             msg_code = int(parts[0])
-            msg_type = MESSAGE_TYPES.get(msg_code, f"UNKNOWN_{msg_code}")
+            msg_type = MESSAGE_TYPES.get(msg_code)
+            
+            if msg_type is None:
+                # 未知のメッセージタイプの場合はログに記録できるように情報を保持
+                msg_type = f"UNKNOWN_{msg_code}"
+                # デバッグ用（必要に応じてコメント解除）
+                # import sys
+                # print(f"Warning: Unknown message type {msg_code}: {message[:100]}", file=sys.stderr)
+            
             result = {
                 "type": msg_type,
                 "code": msg_code,
@@ -135,8 +215,8 @@ def build_message(msg_type: str, **params) -> str:
     if msg_type == "VERSION":
         # VERSION|versionnum,versionstr,build,feats,locale
         # 例: "VERSION|2500,2.5.00,,;6pl;sb;,en_US"
-        version_num = params.get('versionint', '2500')
-        version_str = params.get('version', '2.5.00')
+        version_num = params.get('versionint', DEFAULT_VERSION_NUM)
+        version_str = params.get('version', DEFAULT_VERSION_STR)
         build = params.get('build', '')
         feats = params.get('cliFeats', '')
         locale = params.get('locale', 'en_US')
