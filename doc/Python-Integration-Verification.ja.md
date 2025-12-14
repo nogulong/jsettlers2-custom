@@ -162,7 +162,8 @@ Gradle 7.x
 プロジェクトのルートディレクトリで以下を実行します。
 
 ```bash
-cd /home/runner/work/private-jsettler/private-jsettler
+# プロジェクトのルートディレクトリに移動
+cd [プロジェクトのルートディレクトリ]
 gradle assemble
 ```
 
@@ -199,7 +200,7 @@ Pythonテストを実行する前に、CLASSPATHを設定します（Gradleが�
 ### 4.2 基本的なPythonテストの実行
 
 ```bash
-cd /home/runner/work/private-jsettler/private-jsettler
+# プロジェクトのルートディレクトリで実行
 gradle testPython
 ```
 
@@ -294,7 +295,7 @@ OK
 **ターミナル1** で以下を実行します：
 
 ```bash
-cd /home/runner/work/private-jsettler/private-jsettler
+# プロジェクトのルートディレクトリで実行
 java -Djsettlers.bots.showcookie=Y -jar build/libs/JSettlers-*.jar 8880
 ```
 
@@ -314,7 +315,8 @@ Server listening on port 8880
 **ターミナル2** で以下を実行します：
 
 ```bash
-cd /home/runner/work/private-jsettler/private-jsettler/examples/python-bot
+# examples/python-bot ディレクトリに移動
+cd examples/python-bot
 python3 main.py localhost 8880 testbot <クッキー> --simple
 ```
 
@@ -383,7 +385,7 @@ Robot testbot authenticated
 **ターミナル3** で以下を実行します：
 
 ```bash
-cd /home/runner/work/private-jsettler/private-jsettler
+# プロジェクトのルートディレクトリで実行
 java -jar build/libs/JSettlers-*.jar localhost 8880
 ```
 
@@ -691,8 +693,8 @@ pip3 --version
 cd examples/python-bot
 pip3 install -r requirements.txt
 
-# 3. JSettlersビルド
-cd /home/runner/work/private-jsettler/private-jsettler
+# 3. JSettlersビルド（プロジェクトルートに戻る）
+cd ../..
 gradle assemble
 
 # 4. Pythonテスト実行
