@@ -272,7 +272,11 @@ impl BotWithNN {
     
     fn handle_game_state(&mut self, msg: &str) -> std::io::Result<()> {
         // ゲーム状態を更新
-        // ... 状態の解析とself.game_stateの更新 ...
+        // TODO: メッセージをパースして以下を更新：
+        // - self.game_state.board (ボードの状態)
+        // - self.game_state.resources (自分の資源)
+        // - self.game_state.player_positions (プレイヤーの駒の位置)
+        // 例: extract_field(msg, "state") でゲーム状態番号を取得
         
         // 自分のターンの場合、NNで次のアクションを決定
         if self.is_my_turn() {
@@ -292,13 +296,21 @@ impl BotWithNN {
     }
     
     fn is_my_turn(&self) -> bool {
-        // ターンチェックのロジック
-        true // 簡略化
+        // ターンチェックのロジックを実装
+        // 実際の実装では、ゲームメッセージから現在のプレイヤー番号を追跡する必要があります
+        // TODO: 実装例 - self.current_player == self.my_player_number
+        true // 簡略化のためのプレースホルダー
     }
     
     fn execute_action(&mut self, action: i32) -> std::io::Result<()> {
         // アクションをJSettlersメッセージに変換して送信
-        let game = self.current_game.as_ref().unwrap();
+        let game = match &self.current_game {
+            Some(g) => g,
+            None => {
+                eprintln!("Error: Not in a game");
+                return Ok(());
+            }
+        };
         
         match action {
             0 => {
@@ -367,7 +379,11 @@ fn main() -> std::io::Result<()> {
     // Python NNエージェントを初期化
     println!("🧠 Initializing neural network...");
     let nn_agent = NeuralNetworkAgent::new(python_path, "agent_module")
-        .expect("Failed to initialize NN agent");
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to initialize NN agent: {}", e);
+            eprintln!("Make sure the Python module is in the correct path and dependencies are installed");
+            std::process::exit(1);
+        });
     println!("✓ Neural network ready");
     
     // JSettlersサーバーに接続
@@ -405,7 +421,8 @@ def initialize_model():
     """モデルを初期化（起動時に1回だけ呼ばれる）"""
     global _model
     # モデルをロード
-    _model = torch.load('path/to/your/model.pth')
+    # セキュリティ: 信頼できるモデルのみを使用してください
+    _model = torch.load('path/to/your/model.pth', map_location='cpu')
     _model.eval()
     print("Model loaded successfully")
 
