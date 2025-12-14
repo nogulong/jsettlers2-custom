@@ -13,9 +13,13 @@ DEFAULT_VERSION_STR = "2.5.00"  # 文字列形式のバージョン
 # ロガーの設定（モジュールレベル）
 logger = logging.getLogger(__name__)
 
+# ログ出力時のメッセージ長制限
+MAX_LOG_MESSAGE_LENGTH = 100
+
 # Message type code to name mapping (from SOCMessage.java)
 # ボットが受信する可能性のある主要なメッセージタイプ
 MESSAGE_TYPES = {
+    # Authentication and Connection
     # 認証・接続関連
     999: "AUTHREQUEST",
     1000: "NULLMESSAGE",
@@ -187,7 +191,7 @@ def _parse_numeric_message(message: str) -> dict:
     if msg_type is None:
         # 未知のメッセージタイプの場合はログに記録
         msg_type = f"UNKNOWN_{msg_code}"
-        logger.warning(f"Unknown message type {msg_code}: {message[:100]}")
+        logger.warning(f"Unknown message type {msg_code}: {message[:MAX_LOG_MESSAGE_LENGTH]}")
     
     return {
         "type": msg_type,
