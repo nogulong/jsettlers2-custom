@@ -162,8 +162,8 @@ Gradle 7.x
 プロジェクトのルートディレクトリで以下を実行します。
 
 ```bash
-# プロジェクトのルートディレクトリに移動
-cd [プロジェクトのルートディレクトリ]
+# プロジェクトのルートディレクトリに移動（例: cd ~/jsettlers または cd /path/to/private-jsettler）
+# このディレクトリには build.gradle ファイルがあります
 gradle assemble
 ```
 
