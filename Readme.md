@@ -72,6 +72,8 @@ write documentation please contact the development team from our github page.
 For developer docs, see [Readme.developer.md](doc/Readme.developer.md).
 
 **Third-party robot integration:**
+- **[Python Bot Guide (Japanese)](doc/Python-Bot-Guide.ja.md)** - 
+  Pure Python bot for evaluating PyTorch agents with JSettlers (recommended for Python-based agents)
 - [Rust Agent Integration Guide (Japanese)](doc/Rust-Agent-Integration-Guide.ja.md) - 
   Comprehensive guide for integrating Rust-based agents with JSettlers
 - [Rust Agent Quick Start (Japanese)](doc/Rust-Agent-Quick-Start.ja.md) - 
