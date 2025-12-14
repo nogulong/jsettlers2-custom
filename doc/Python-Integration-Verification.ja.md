@@ -666,6 +666,54 @@ model = torch.load('model.pth', map_location='cpu')
 print(type(model))
 ```
 
+### 7.10 メッセージプロトコルエラー / Connection closed
+
+**エラー:**
+```
+← 9998|2700,2.7.00,JM20251205,;ch;
+← 1003|
+← 1019|
+❌ Error: Connection closed
+ConnectionError: Connection closed
+```
+
+**原因:** 
+JSettlersサーバーは数値形式のメッセージ（例: `9998|...`）を送信しますが、古いバージョンのPythonボットはこの形式を正しく処理できませんでした。
+
+**解決方法:**
+
+1. 最新版のPythonボットを使用していることを確認：
+```bash
+cd examples/python-bot
+git pull  # または最新版をダウンロード
+```
+
+2. `utils.py`が正しく更新されているか確認：
+```bash
+grep "MESSAGE_TYPES" examples/python-bot/utils.py
+```
+
+期待される出力には `MESSAGE_TYPES` 辞書が含まれているはずです。
+
+3. 正しいプロトコル形式が使用されているか確認：
+   - VERSION メッセージ: `VERSION|2500,2.5.00,,;6pl;sb;,en_US`
+   - IMAROBOT メッセージ: `IMAROBOT|nickname,cookie,rbclass`
+
+4. サーバーのバージョンとボットの互換性を確認：
+```bash
+# サーバー起動時のバージョン情報をチェック
+java -jar build/libs/JSettlers-*.jar --version
+```
+
+5. 問題が解決しない場合は、デバッグモードでメッセージを確認：
+```python
+# jsettlers_bot.py の handle_message() に追加
+print(f"Raw message: {repr(message)}")
+print(f"Parsed: {parse_message(message)}")
+```
+
+**注意:** 2024年12月のアップデートで、Pythonボットは数値形式とテキスト形式の両方のメッセージをサポートするように修正されました。古いバージョンのボットを使用している場合は、最新版に更新してください。
+
 ---
 
 ## まとめ
