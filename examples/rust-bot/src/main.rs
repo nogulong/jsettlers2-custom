@@ -1,6 +1,10 @@
 use std::io::{Read, Write};
 use std::net::TcpStream;
 
+// JSettlers game state constants
+// See: soc.game.SOCGame.java for complete list
+const GAME_STATE_ROLL_OR_CARD: &str = "15";  // Player should roll dice or play dev card
+
 /// Write a string in Java DataOutputStream.writeUTF format
 fn write_java_utf(stream: &mut TcpStream, msg: &str) -> std::io::Result<()> {
     let bytes = msg.as_bytes();
@@ -80,7 +84,13 @@ impl RustBot {
     /// Handle an incoming message
     fn handle_message(&mut self, msg: &str) -> std::io::Result<()> {
         // Extract message type (first part before ':')
-        let msg_type = msg.split(':').next().unwrap_or("");
+        let msg_type = match msg.split(':').next() {
+            Some(t) if !t.is_empty() => t,
+            _ => {
+                eprintln!("⚠️  Malformed message (no message type): {}", msg);
+                return Ok(());
+            }
+        };
         
         match msg_type {
             "UPDATEROBOTPARAMS" => {
@@ -147,8 +157,8 @@ impl RustBot {
         ) {
             println!("📊 Game {} state: {}", game, state);
             
-            // State 15 = ROLL_OR_CARD (player should roll dice)
-            if state == "15" && Some(game.clone()) == self.current_game {
+            // ROLL_OR_CARD state: player should roll dice
+            if state == GAME_STATE_ROLL_OR_CARD && Some(game.clone()) == self.current_game {
                 println!("🎲 Rolling dice...");
                 let roll_msg = format!("ROLLDICE:game={}", game);
                 println!("→ {}", roll_msg);
@@ -173,7 +183,11 @@ fn main() -> std::io::Result<()> {
     
     let host = &args[1];
     let port: u16 = args[2].parse()
-        .expect("Invalid port number");
+        .unwrap_or_else(|_| {
+            eprintln!("Error: Invalid port number '{}'", args[2]);
+            eprintln!("Port must be a number between 1 and 65535");
+            std::process::exit(1);
+        });
     let nickname = &args[3];
     let cookie = &args[4];
     
