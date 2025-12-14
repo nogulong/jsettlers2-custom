@@ -1,0 +1,11 @@
+[package]
+name = "jsettlers-rust-bot"
+version = "0.1.0"
+edition = "2021"
+
+# No external dependencies needed for basic bot
+# This example uses only std library for simplicity
+# For more advanced bots, consider adding:
+# - tokio for async networking
+# - serde/serde_json for game state serialization
+[dependencies]

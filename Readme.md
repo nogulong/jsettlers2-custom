@@ -71,6 +71,18 @@ Over time, more docs will be written. If you are interested in helping
 write documentation please contact the development team from our github page.
 For developer docs, see [Readme.developer.md](doc/Readme.developer.md).
 
+**Third-party robot integration:**
+- **[Python Bot Guide (Japanese)](doc/Python-Bot-Guide.ja.md)** - 
+  Pure Python bot for evaluating PyTorch agents with JSettlers (recommended for Python-based agents)
+- **[Python Bot Quick Reference (Japanese)](doc/Python-Bot-Quick-Reference.ja.md)** - 
+  Quick reference for customizing the Python bot
+- [Rust Agent Integration Guide (Japanese)](doc/Rust-Agent-Integration-Guide.ja.md) - 
+  Comprehensive guide for integrating Rust-based agents with JSettlers
+- [Rust Agent Quick Start (Japanese)](doc/Rust-Agent-Quick-Start.ja.md) - 
+  Quick start guide for connecting Rust bots to JSettlers server
+- [Python + Rust Hybrid Guide (Japanese)](doc/Rust-Python-Hybrid-Guide.ja.md) - 
+  Guide for integrating Python neural networks with Rust bots (for agents trained in Rust but using Python NNs)
+
 If you downloaded a JSettlers JAR file without attached documentation,
 the official location of this Readme and the docs is online at
 https://github.com/jdmonin/JSettlers2/blob/main/Readme.md .
