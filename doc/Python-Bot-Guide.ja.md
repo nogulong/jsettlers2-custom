@@ -2,6 +2,8 @@
 
 このガイドでは、PyTorchで実装したエージェント（ニューラルネットワーク）をJSettlersサーバーと対戦させる方法を説明します。
 
+> **注意:** Python連携が正常に動作するか確認するには、まず [Python Integration Verification Guide](Python-Integration-Verification.ja.md) を参照してください。
+
 ## 概要
 
 このガイドは、以下のような状況を想定しています：

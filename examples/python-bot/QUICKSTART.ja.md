@@ -208,6 +208,7 @@ JSettlersでは、各ターンは以下の流れで進行します：
 詳細は以下を参照：
 - [Python Bot Guide](../../doc/Python-Bot-Guide.ja.md) - 完全ガイド
 - [Python Bot Quick Reference](../../doc/Python-Bot-Quick-Reference.ja.md) - クイックリファレンス
+- [Python Integration Verification Guide](../../doc/Python-Integration-Verification.ja.md) - Python連携の確認方法
 
 ## トラブルシューティングのヒント
 
