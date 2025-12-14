@@ -76,6 +76,8 @@ For developer docs, see [Readme.developer.md](doc/Readme.developer.md).
   Comprehensive guide for integrating Rust-based agents with JSettlers
 - [Rust Agent Quick Start (Japanese)](doc/Rust-Agent-Quick-Start.ja.md) - 
   Quick start guide for connecting Rust bots to JSettlers server
+- [Python + Rust Hybrid Guide (Japanese)](doc/Rust-Python-Hybrid-Guide.ja.md) - 
+  Guide for integrating Python neural networks with Rust bots (for agents trained in Rust but using Python NNs)
 
 If you downloaded a JSettlers JAR file without attached documentation,
 the official location of this Readme and the docs is online at

@@ -8,19 +8,21 @@
 2. [アプローチの選択](#アプローチの選択)
 3. [方法1: ネットワークプロトコルの実装（推奨）](#方法1-ネットワークプロトコルの実装推奨)
 4. [方法2: Javaラッパーの作成](#方法2-javaラッパーの作成)
-5. [サーバーの設定](#サーバーの設定)
-6. [テストと実行](#テストと実行)
-7. [トラブルシューティング](#トラブルシューティング)
-8. [参考資料](#参考資料)
+5. [方法3: Python + Rustハイブリッド（NN使用時）](#方法3-python--rustハイブリッドnn使用時)
+6. [サーバーの設定](#サーバーの設定)
+7. [テストと実行](#テストと実行)
+8. [トラブルシューティング](#トラブルシューティング)
+9. [参考資料](#参考資料)
 
 ## 概要
 
 JSettlersは、Settlers of Catan（カタンの開拓者たち）のJava実装で、クライアント・サーバーアーキテクチャを採用しています。AIロボットは、ネットワークメッセージを通じてサーバーと通信します。
 
-Rust製エージェントを対戦させるには、主に2つのアプローチがあります：
+Rust製エージェント（またはPython + Rustハイブリッド）を対戦させるには、主に3つのアプローチがあります：
 
 1. **ネットワークプロトコルを直接実装する**（推奨）
 2. **Javaラッパーを作成してRustコードを呼び出す**
+3. **Python + Rustハイブリッド**（NNがPythonで実装されている場合）
 
 ## アプローチの選択
 
@@ -56,6 +58,129 @@ Rust製エージェントを対戦させるには、主に2つのアプローチ
 **適している場合:**
 - JNIの経験がある
 - Rustのロジックのみ移植したい
+
+### 方法3: Python + Rustハイブリッド（NN使用時）
+
+**概要:**
+
+エージェントがRust環境で学習し、ニューラルネットワーク（NN）がPythonで実装されている場合、以下のアプローチが考えられます：
+
+1. **Rustボット + PyO3** - RustからPythonのNNを呼び出す
+2. **Pythonボット + Rust環境** - PythonでボットとNNを実装し、Rust環境を呼び出す
+3. **分離アーキテクチャ** - Rustボット（JSettlers通信）とPython推論サーバー（NN）を分離
+
+**推奨アプローチ: Rustボット + PyO3**
+
+**利点:**
+- ネットワーク通信はRustで高速に処理
+- Python NNを直接呼び出せる
+- 単一プロセスで完結
+
+**欠点:**
+- PyO3の設定が必要
+- Pythonランタイムが必要
+
+**実装概要:**
+
+```toml
+[dependencies]
+pyo3 = { version = "0.20", features = ["auto-initialize"] }
+```
+
+```rust
+use pyo3::prelude::*;
+use pyo3::types::PyDict;
+
+struct AgentWithNN {
+    py_module: Py<PyModule>,
+}
+
+impl AgentWithNN {
+    fn new() -> PyResult<Self> {
+        Python::with_gil(|py| {
+            // Pythonモジュールをインポート
+            let sys = py.import("sys")?;
+            sys.getattr("path")?.call_method1("append", ("/path/to/your/python/code",))?;
+            
+            let module = py.import("your_agent_module")?;
+            Ok(Self {
+                py_module: module.into(),
+            })
+        })
+    }
+    
+    fn predict_action(&self, game_state: &GameState) -> PyResult<Action> {
+        Python::with_gil(|py| {
+            let module = self.py_module.as_ref(py);
+            
+            // ゲーム状態をPythonの辞書に変換
+            let state_dict = PyDict::new(py);
+            state_dict.set_item("board", game_state.board)?;
+            state_dict.set_item("resources", game_state.resources)?;
+            // ... その他の状態
+            
+            // PythonのNNで推論
+            let result = module.call_method1("predict", (state_dict,))?;
+            
+            // 結果をRustの型に変換
+            let action: i32 = result.extract()?;
+            Ok(Action::from(action))
+        })
+    }
+}
+```
+
+**代替アプローチ: 分離アーキテクチャ**
+
+Rustボット（JSettlers通信）とPython推論サーバーを分離：
+
+```
+[Rustボット] <--TCP/HTTP--> [Python推論サーバー]
+     |                              |
+     |                         [NNモデル]
+     |
+[JSettlersサーバー]
+```
+
+Pythonサーバー例（Flask使用）：
+
+```python
+from flask import Flask, request, jsonify
+import torch  # または tensorflow
+import your_nn_model
+
+app = Flask(__name__)
+model = your_nn_model.load_model('path/to/model.pth')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    game_state = request.json
+    action = model.predict(game_state)
+    return jsonify({'action': action})
+
+if __name__ == '__main__':
+    app.run(port=5000)
+```
+
+Rustボット側：
+
+```rust
+use reqwest;
+
+async fn get_nn_prediction(game_state: &GameState) -> Result<Action> {
+    let client = reqwest::Client::new();
+    let response = client
+        .post("http://localhost:5000/predict")
+        .json(&game_state)
+        .send()
+        .await?;
+    
+    let result: PredictionResult = response.json().await?;
+    Ok(result.action)
+}
+```
+
+詳細は「方法1」のネットワークプロトコル実装セクションを参照し、NNの呼び出し部分を上記のように実装してください。
 
 ## 方法1: ネットワークプロトコルの実装（推奨）
 

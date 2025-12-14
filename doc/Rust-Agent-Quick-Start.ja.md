@@ -2,6 +2,10 @@
 
 private-rust-catanで作成したエージェントをJSettlersと対戦させるための最短手順です。
 
+## 注意: Python NNを使用している場合
+
+**エージェントのニューラルネットワーク（NN）がPythonで実装されている場合**は、[Python + Rust ハイブリッドガイド](Rust-Python-Hybrid-Guide.ja.md)を参照してください。PyO3や分離アーキテクチャを使用した統合方法が説明されています。
+
 ## 最も簡単な方法
 
 ネットワークプロトコルを実装してRustで直接JSettlersサーバーに接続する方法を推奨します。
