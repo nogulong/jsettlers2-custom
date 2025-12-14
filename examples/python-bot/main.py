@@ -26,7 +26,7 @@ def main():
     port = int(sys.argv[2])
     nickname = sys.argv[3]
     cookie = sys.argv[4]
-    model_path = sys.argv[5] if len(sys.argv) > 5 else "model.pth"
+    model_path = sys.argv[5] if len(sys.argv) > 5 else None
     
     print("🤖 JSettlers Python Bot with PyTorch Agent")
     print("=" * 50)

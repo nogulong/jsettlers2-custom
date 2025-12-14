@@ -34,9 +34,12 @@ def read_java_utf(sock: socket.socket) -> str:
         受信したメッセージ
     """
     # 長さを2バイトのビッグエンディアンで受信
-    length_bytes = sock.recv(2)
-    if len(length_bytes) < 2:
-        raise ConnectionError("Connection closed")
+    length_bytes = b''
+    while len(length_bytes) < 2:
+        chunk = sock.recv(2 - len(length_bytes))
+        if not chunk:
+            raise ConnectionError("Connection closed")
+        length_bytes += chunk
     
     length = struct.unpack('>H', length_bytes)[0]
     

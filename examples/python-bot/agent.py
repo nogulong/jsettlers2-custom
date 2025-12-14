@@ -13,12 +13,12 @@ class CatanAgent:
     注意: これは例です。実際のモデルアーキテクチャに合わせてカスタマイズしてください。
     """
     
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str = None):
         """
         Args:
-            model_path: 学習済みモデルのパス
+            model_path: 学習済みモデルのパス（Noneの場合はランダムエージェント）
         """
-        if not Path(model_path).exists():
+        if model_path is None or not Path(model_path).exists():
             # モデルファイルが存在しない場合は、ダミーモデルを使用
             print(f"⚠️  Model file not found: {model_path}")
             print("⚠️  Using dummy random agent for demonstration")

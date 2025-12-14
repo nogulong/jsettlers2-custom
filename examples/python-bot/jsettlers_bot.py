@@ -2,6 +2,7 @@
 JSettlersサーバーに接続するPythonボット
 """
 import socket
+import traceback
 from typing import Optional
 
 from utils import write_java_utf, read_java_utf, parse_message, build_message
@@ -163,7 +164,6 @@ class JSettlersBot:
             
         except Exception as e:
             print(f"⚠️  Error in decision making: {e}")
-            import traceback
             traceback.print_exc()
             # フォールバック: サイコロを振る
             self.roll_dice()
