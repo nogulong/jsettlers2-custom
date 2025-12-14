@@ -121,6 +121,18 @@ class JSettlersBot:
             # ターン情報
             current_player = int(parsed.get("playerNumber", -1))
             self.game_state.current_player = current_player
+        
+        elif msg_type == "DISCARDREQUEST":
+            # カードを捨てる要求
+            self.handle_discard_request(parsed)
+        
+        elif msg_type == "MAKEOFFER":
+            # トレード提案を受信
+            self.handle_trade_offer(parsed)
+        
+        elif msg_type == "CHOOSEPLAYER":
+            # プレイヤーを選択（盗賊で奪う相手）
+            self.handle_choose_player(parsed)
             
     def join_game(self, game_name: str):
         """ゲームに参加"""
@@ -235,6 +247,79 @@ class JSettlersBot:
             game=self.current_game,
             pieceType="1",
             coord=str(coord)
+        )
+        write_java_utf(self.sock, msg)
+        print(f"→ {msg}")
+    
+    def handle_discard_request(self, params: dict):
+        """カードを捨てる要求を処理"""
+        num_discard = int(params.get("numDiscard", 0))
+        print(f"🗑️  Must discard {num_discard} cards")
+        
+        # ランダムに捨てるカードを選択
+        resources_to_discard = {'clay': 0, 'ore': 0, 'sheep': 0, 'wheat': 0, 'wood': 0}
+        remaining = num_discard
+        
+        # 持っている資源からランダムに選んで捨てる
+        for resource in ['clay', 'ore', 'sheep', 'wheat', 'wood']:
+            available = self.game_state.my_resources.get(resource, 0)
+            if available > 0 and remaining > 0:
+                discard = min(available, remaining)
+                resources_to_discard[resource] = discard
+                remaining -= discard
+        
+        # カードを捨てる
+        self.discard_cards(resources_to_discard)
+    
+    def discard_cards(self, resources: dict):
+        """カードを捨てる"""
+        msg = build_message(
+            "DISCARD",
+            game=self.current_game,
+            resources=f"{resources['clay']},{resources['ore']},{resources['sheep']},{resources['wheat']},{resources['wood']}"
+        )
+        write_java_utf(self.sock, msg)
+        print(f"→ {msg}")
+        print(f"   Discarding: {resources}")
+    
+    def handle_trade_offer(self, params: dict):
+        """トレード提案を処理（常に断る）"""
+        from_player = params.get("from")
+        print(f"🔄 Trade offer from player {from_player} - declining")
+        self.decline_trade()
+    
+    def decline_trade(self):
+        """トレードを断る"""
+        msg = build_message(
+            "REJECTOFFER",
+            game=self.current_game
+        )
+        write_java_utf(self.sock, msg)
+        print(f"→ {msg}")
+    
+    def handle_choose_player(self, params: dict):
+        """プレイヤーを選択（盗賊で奪う相手）"""
+        choices = params.get("choices", "")
+        print(f"👤 Choosing player to rob from: {choices}")
+        
+        # 選択肢がある場合は最初のプレイヤーを選択
+        if choices:
+            choice_list = [int(x) for x in choices.split(",") if x.strip().isdigit()]
+            if choice_list:
+                chosen = choice_list[0]
+                self.choose_player(chosen)
+            else:
+                # 選択肢がない場合は-1（誰も奪わない）
+                self.choose_player(-1)
+        else:
+            self.choose_player(-1)
+    
+    def choose_player(self, player_number: int):
+        """プレイヤーを選択"""
+        msg = build_message(
+            "CHOOSEPLAYER",
+            game=self.current_game,
+            choice=str(player_number)
         )
         write_java_utf(self.sock, msg)
         print(f"→ {msg}")
