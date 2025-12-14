@@ -141,7 +141,12 @@ class JSettlersBot:
         
         # 状態15 = ROLL_OR_CARD（サイコロを振る or 開発カードを使う）
         if state == 15 and self.is_my_turn():
-            print("🎲 My turn - making decision...")
+            print("🎲 My turn - rolling dice...")
+            self.roll_dice()
+        
+        # 状態20 = PLAY1（ターン中のアクション - 建設、交易など）
+        elif state == 20 and self.is_my_turn():
+            print("🎮 My turn - deciding action...")
             self.make_decision()
     
     def is_my_turn(self) -> bool:
@@ -155,7 +160,7 @@ class JSettlersBot:
             observation = self.game_state.to_observation()
             
             # エージェントでアクションを予測
-            action = self.agent.predict_action(observation)
+            action = self.agent.predict_action(observation, self.game_state)
             
             print(f"🧠 Agent predicted action: {action}")
             
@@ -165,8 +170,8 @@ class JSettlersBot:
         except Exception as e:
             print(f"⚠️  Error in decision making: {e}")
             traceback.print_exc()
-            # フォールバック: サイコロを振る
-            self.roll_dice()
+            # フォールバック: ターンを終了
+            self.end_turn()
     
     def execute_action(self, action: int):
         """
@@ -184,27 +189,33 @@ class JSettlersBot:
         # 実際のエージェントのアクション空間に合わせて変更してください
         
         if action == 0:
-            # サイコロを振る
-            self.roll_dice()
+            # ターンを終了
+            self.end_turn()
         elif action == 1:
             # 道路を建設（座標は別途決定が必要）
             # TODO: 実際の建設可能な座標を見つける
-            print("⚠️  Road building not implemented, rolling dice instead")
-            self.roll_dice()
+            print("⚠️  Road building not implemented, ending turn instead")
+            self.end_turn()
         elif action == 2:
             # 集落を建設
             # TODO: 実際の建設可能な座標を見つける
-            print("⚠️  Settlement building not implemented, rolling dice instead")
-            self.roll_dice()
+            print("⚠️  Settlement building not implemented, ending turn instead")
+            self.end_turn()
         else:
-            # デフォルト: サイコロを振る
-            self.roll_dice()
+            # デフォルト: ターンを終了
+            self.end_turn()
     
     def roll_dice(self):
         """サイコロを振る"""
         msg = build_message("ROLLDICE", game=self.current_game)
         write_java_utf(self.sock, msg)
         print(f"→ {msg}")
+    
+    def end_turn(self):
+        """ターンを終了"""
+        msg = build_message("ENDTURN", game=self.current_game)
+        write_java_utf(self.sock, msg)
+        print(f"→ {msg} (ending turn)")
     
     def build_road(self, coord: int):
         """道路を建設"""

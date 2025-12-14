@@ -10,9 +10,8 @@ class SimpleHeuristicAgent:
     単純なルールベースのエージェント
     
     このエージェントは：
-    - ターン開始時にサイコロを振る
-    - 資源が十分にあれば道路や集落を建設しようとする
-    - それ以外はターンを終了する
+    - サイコロは自動的に振られる（ゲーム状態15で）
+    - ターン中はすぐにターンを終了する
     
     実際の強化学習エージェントの代わりにデモンストレーション用に使用できます。
     """
@@ -21,6 +20,7 @@ class SimpleHeuristicAgent:
         """エージェントを初期化"""
         print("🤖 Simple heuristic agent initialized")
         print("   This agent uses rule-based decisions (no ML model required)")
+        print("   Strategy: Roll dice (automatic) → End turn immediately")
     
     def predict_action(self, observation=None, game_state=None) -> int:
         """
@@ -32,23 +32,11 @@ class SimpleHeuristicAgent:
             
         Returns:
             アクション番号（整数）
+            0 = ターンを終了
         """
-        # 基本的な戦略:
-        # - ゲーム状態に関係なく、常にサイコロを振るかターンを終了
-        # - 実際のゲームでは、サイコロを振った後に建設などができる
-        
-        if game_state is not None:
-            # 簡単なヒューリスティック: 資源が多ければ建設を試みる
-            total_resources = sum(game_state.my_resources.values())
-            
-            if total_resources >= 4:
-                # 資源が4つ以上あれば、ランダムに建設アクションを選ぶ
-                # （実際には建設可能な場所を確認する必要がある）
-                print("   💡 Resources available, considering build action")
-                return random.choice([0, 1, 2])  # 0=dice, 1=road, 2=settlement
-        
-        # デフォルト: サイコロを振る（アクション0）
-        return 0
+        # シンプルな戦略: 常にターンを終了
+        # サイコロは状態15で自動的に振られます
+        return 0  # ターンを終了
     
     def __repr__(self):
         return "SimpleHeuristicAgent(rule-based)"
@@ -62,23 +50,31 @@ class ImprovedHeuristicAgent:
     
     def __init__(self):
         print("🤖 Improved heuristic agent initialized")
+        print("   Strategy: Roll dice → Check resources → Build or end turn")
         self.turn_count = 0
     
     def predict_action(self, observation=None, game_state=None) -> int:
         """
         より高度なヒューリスティックでアクションを選択
+        
+        Returns:
+            0 = ターンを終了
+            1 = 道路建設を試みる
+            2 = 集落建設を試みる
         """
         self.turn_count += 1
         
         if game_state is None:
-            return 0  # サイコロを振る
+            return 0  # ターンを終了
         
         # ゲーム状態を分析
         my_resources = game_state.my_resources
         total_resources = sum(my_resources.values())
         
-        # 戦略1: 初期段階では積極的に建設
-        if self.turn_count < 20 and total_resources >= 4:
+        print(f"   📊 Resources: {total_resources} total")
+        
+        # 戦略1: 初期段階では積極的に建設を試みる
+        if self.turn_count < 50 and total_resources >= 4:
             # 集落建設の資源があるか確認
             if (my_resources['wood'] >= 1 and 
                 my_resources['clay'] >= 1 and 
@@ -92,12 +88,8 @@ class ImprovedHeuristicAgent:
                 print("   🛣️  Attempting to build road")
                 return 1  # 道路建設
         
-        # 戦略2: 資源が少ない場合はサイコロを振る
-        if total_resources < 3:
-            print("   🎲 Rolling dice (low resources)")
-            return 0
-        
-        # デフォルト: サイコロを振る
+        # デフォルト: ターンを終了
+        print("   ⏭️  Ending turn")
         return 0
     
     def __repr__(self):
@@ -110,7 +102,7 @@ if __name__ == "__main__":
     agent = SimpleHeuristicAgent()
     for i in range(5):
         action = agent.predict_action()
-        print(f"  Turn {i+1}: action = {action}")
+        print(f"  Turn {i+1}: action = {action} (0=end turn)")
     
     print("\nTesting ImprovedHeuristicAgent:")
     agent2 = ImprovedHeuristicAgent()
