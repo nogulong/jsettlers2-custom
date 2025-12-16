@@ -1,81 +1,55 @@
-#!/usr/bin/env python3
-"""
-JSettlers Python Bot メイン実行ファイル
-
-Usage:
-    python main.py <host> <port> <nickname> <cookie> [--simple | model_path]
-    
-Examples:
-    # シンプルなヒューリスティックエージェント（モデル不要）
-    python main.py localhost 8880 mybot abc123 --simple
-    
-    # PyTorchモデルを使用
-    python main.py localhost 8880 mybot abc123 model.pth
-"""
+import argparse # argparseを使うと引数処理が楽になります
 import sys
-from pathlib import Path
-
 from jsettlers_bot import JSettlersBot
 
 def main():
-    if len(sys.argv) < 5:
-        print("Usage: python main.py <host> <port> <nickname> <cookie> [--simple | model_path]")
-        print()
-        print("Examples:")
-        print("  # シンプルなヒューリスティックエージェント（推奨・すぐ動作確認可能）")
-        print("  python main.py localhost 8880 mybot abc123 --simple")
-        print()
-        print("  # PyTorchモデルを使用")
-        print("  python main.py localhost 8880 mybot abc123 model.pth")
-        print()
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='JSettlers Python Bot')
+    parser.add_argument('host', help='Server Host')
+    parser.add_argument('port', type=int, help='Server Port')
+    parser.add_argument('nickname', help='Bot Nickname')
+    parser.add_argument('cookie', help='Auth Cookie (dummy)')
+    parser.add_argument('--model', default=None, help='Path to model file')
     
-    host = sys.argv[1]
-    port = int(sys.argv[2])
-    nickname = sys.argv[3]
-    cookie = sys.argv[4]
-    agent_type = sys.argv[5] if len(sys.argv) > 5 else "--simple"
+    # ★追加: モード切替
+    parser.add_argument('--create', action='store_true', help='Create a new game instead of joining')
+    parser.add_argument('--game', default='eval', help='Game name to join (if not creating)')
+    parser.add_argument('--num_games', type=int, default=1, help='Number of games to create/join (default: 1)')
     
-    print("🤖 JSettlers Python Bot")
-    print("=" * 50)
-    print(f"Host: {host}:{port}")
-    print(f"Nickname: {nickname}")
-    print()
-    
-    # エージェントをロード
-    print("🧠 Loading agent...")
-    
-    if agent_type == "--simple" or agent_type == "-s":
-        # シンプルなヒューリスティックエージェントを使用
+    # ★追加: CPUボットを何体追加するか (デフォルトは3=ソロプレイ用)
+    parser.add_argument('--robots', type=int, default=3, help='Number of CPU robots to add (0-3)')
+
+    args = parser.parse_args()
+
+    # エージェントのロード（簡略化しています）
+    if args.model:
+        print(f"🧠 Loading ML agent from {args.model}...")
+        # agent = ...
+        agent = None # 仮
+    else:
+        print("🧠 Using Simple Heuristic Agent")
         from simple_agent import SimpleHeuristicAgent
         agent = SimpleHeuristicAgent()
-        print("✓ Using simple heuristic agent (no ML model required)")
-    elif agent_type == "--improved" or agent_type == "-i":
-        # 改良版ヒューリスティックエージェントを使用
-        from simple_agent import ImprovedHeuristicAgent
-        agent = ImprovedHeuristicAgent()
-        print("✓ Using improved heuristic agent (no ML model required)")
-    else:
-        # PyTorchモデルを使用
-        try:
-            from agent import CatanAgent
-            agent = CatanAgent(agent_type)
-            print(f"✓ Loaded PyTorch agent from {agent_type}")
-        except ImportError:
-            print("⚠️  PyTorch not installed. Using simple heuristic agent instead.")
-            from simple_agent import SimpleHeuristicAgent
-            agent = SimpleHeuristicAgent()
+
+    # ボット作成
+    bot = JSettlersBot(args.host, args.port, args.nickname, args.cookie, agent)
     
-    print("✓ Agent ready")
-    print()
-    
-    # ボットを作成
-    bot = JSettlersBot(host, port, nickname, cookie, agent)
-    
-    # 接続して実行
     bot.connect()
-    bot.authenticate()
-    bot.run()
+    bot.authenticate() 
+
+    # 実行モードの指定
+    if args.create:
+        print(f"🛠️  Mode: CREATOR (Adding {args.robots} CPU bots)")
+        # 作成モード: CPUボットの数も渡す
+        bot.run(mode="create", num_robots=args.robots, game_name=args.game, num_games=args.num_games)
+        
+    elif args.game:
+        print(f"👉 Mode: JOINER (Joining '{args.game}')")
+        # 参加モード: 既存ゲームに入るだけ
+        bot.run(mode="join", game_name=args.game, num_games=args.num_games)
+        
+    else:
+        # デフォルト動作（ランダム作成、CPU3体）
+        bot.run(mode="create", num_robots=3)
 
 if __name__ == "__main__":
     main()

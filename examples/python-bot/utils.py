@@ -3,6 +3,7 @@ JSettlersプロトコル用のユーティリティ関数
 """
 import struct
 import socket
+import re
 
 def write_java_utf(sock: socket.socket, message: str):
     """
@@ -55,30 +56,57 @@ def read_java_utf(sock: socket.socket) -> str:
 
 def parse_message(message: str) -> dict:
     """
-    JSettlersメッセージをパース
+    JSettlersメッセージをパース (修正版)
     
     Args:
-        message: メッセージ文字列（例: "GAMESTATE:game=test|state=15"）
+        message: メッセージ文字列（例: "1015|aaa" や "1079|aaa,2700,BC=t4"）
         
     Returns:
-        パースされたメッセージ {"type": "GAMESTATE", "game": "test", "state": "15"}
+        パースされたメッセージ辞書
     """
-    if ':' not in message:
-        return {"type": message}
+    # 1. メッセージIDと中身を分離 (区切りはパイプ "|")
+    if '|' not in message:
+        return {"type": message, "args": []}
     
-    msg_type, data = message.split(':', 1)
+    msg_type, content = message.split('|', 1)
     result = {"type": msg_type}
     
-    # パラメータを解析
-    if '|' in data:
-        for param in data.split('|'):
-            if '=' in param:
-                key, value = param.split('=', 1)
-                result[key] = value
-    elif '=' in data:
-        key, value = data.split('=', 1)
-        result[key] = value
+    # 2. 中身をトークンに分割
+    # サーバーはパイプ "|" とカンマ "," の両方を区切りに使うため、正規表現で分割
+    tokens = re.split(r'[|,]', content)
     
+    # 空のトークンを除去（末尾のカンマなどで空文字が入るのを防ぐ）
+    tokens = [t for t in tokens if t]
+    result["args"] = tokens  # 生のリストも保存しておく
+    
+    # 3. key=value 形式の解析
+    for token in tokens:
+        if '=' in token:
+            key, value = token.split('=', 1)
+            result[key] = value
+            
+    # 4. 【重要】位置による値の割り当て (Positional Arguments)
+    # これをやらないと "1015|aaa" の "aaa" が取り出せません
+    
+    if len(tokens) > 0:
+        # 多くのメッセージで、最初の値は「ゲーム名」です
+        # 特に NEWGAME(1015), JOINREQUEST(1023), GAMEINFO(1079) など
+        if msg_type in ["1015", "1023", "1079", "1021", "1013"]:
+             # まだ "game" キーがなければ、先頭トークンをゲーム名とする
+             if "game" not in result:
+                 result["game"] = tokens[0]
+
+    if len(tokens) > 1:
+        # JOINGAMEAUTH(1021) の場合、2番目はプレイヤー番号
+        if msg_type == "1021":
+             if "playerNumber" not in result:
+                 result["playerNumber"] = tokens[1]
+                 
+        # TURN(1026) の場合、1番目がプレイヤー番号
+        if msg_type == "1026":
+             if "playerNumber" not in result:
+                 result["playerNumber"] = tokens[1]
+
     return result
 
 def build_message(msg_type: str, **params) -> str:
