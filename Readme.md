@@ -78,6 +78,8 @@ For developer docs, see [Readme.developer.md](doc/Readme.developer.md).
   Quick reference for customizing the Python bot
 - **[Python Bot Actions Guide (Japanese)](doc/Python-Bot-Actions-Guide.ja.md)** - 
   Detailed guide on how to send game actions (build, buy cards, etc.) from Python bot
+- **[JSettlers Robot Behavior Rules (Japanese)](doc/JSettlers-Robot-Behavior-Rules.ja.md)** - 
+  Comprehensive documentation of built-in robot AI behavior, strategies, and decision-making rules
 - **[Python Integration Verification Guide (Japanese)](doc/Python-Integration-Verification.ja.md)** - 
   Step-by-step guide to verify Python integration is working properly
 - [Rust Agent Integration Guide (Japanese)](doc/Rust-Agent-Integration-Guide.ja.md) - 
