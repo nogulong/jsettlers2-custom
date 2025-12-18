@@ -76,6 +76,8 @@ For developer docs, see [Readme.developer.md](doc/Readme.developer.md).
   Pure Python bot for evaluating PyTorch agents with JSettlers (recommended for Python-based agents)
 - **[Python Bot Quick Reference (Japanese)](doc/Python-Bot-Quick-Reference.ja.md)** - 
   Quick reference for customizing the Python bot
+- **[Python Bot Actions Guide (Japanese)](doc/Python-Bot-Actions-Guide.ja.md)** - 
+  Detailed guide on how to send game actions (build, buy cards, etc.) from Python bot
 - **[Python Integration Verification Guide (Japanese)](doc/Python-Integration-Verification.ja.md)** - 
   Step-by-step guide to verify Python integration is working properly
 - [Rust Agent Integration Guide (Japanese)](doc/Rust-Agent-Integration-Guide.ja.md) - 
