@@ -116,6 +116,32 @@ print(f"PyTorch version: {torch.__version__}")
 print(f"Executing action: {action}, type: {type(action)}")
 ```
 
+## 内蔵ボットの使用
+
+JSettlersの内蔵ボットと一緒にプレイする方法については、以下のドキュメントを参照してください：
+
+- **[INTERNAL_BOTS_GUIDE.md](INTERNAL_BOTS_GUIDE.md)** - 内蔵ボットシステムの概要（英語）
+- **[INTERNAL_BOTS.ja.md](INTERNAL_BOTS.ja.md)** - 内蔵ボットシステムの詳細（日本語）
+- **[IMPLEMENTING_INTERNAL_BOTS.ja.md](IMPLEMENTING_INTERNAL_BOTS.ja.md)** - 実装ガイド（日本語）
+- **[example_internal_bots.py](example_internal_bots.py)** - 使用例
+
+### 内蔵ボットの種類
+
+- **FAST_STRATEGY** (70%): `dumb01`, `dumb02`, ... - 高速だが単純
+- **SMART_STRATEGY** (30%): `robot 1`, `robot 2`, ... - 賢いが遅い
+
+### 使用例
+
+```python
+bot = JSettlersBot(host, port, nickname, cookie, agent)
+bot.run(
+    game_name="MyGame",
+    mode="create",
+    num_robots=3,  # サーバーが自動的に3体の内蔵ボットを追加
+    num_games=1
+)
+```
+
 ## 詳細ドキュメント
 
 詳細は [Python Bot Guide (Japanese)](../../doc/Python-Bot-Guide.ja.md) を参照してください。
