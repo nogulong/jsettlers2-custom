@@ -200,6 +200,19 @@ public class SOCRobotClient extends SOCDisplaylessPlayerClient
     protected String rbclass = SOCImARobot.RBCLASS_BUILTIN;
 
     /**
+     * If set, automatically join this game name after connecting.
+     * Set by main() from command line args.
+     */
+    public String autoJoinGameName;
+
+    /**
+     * If set, automatically sit at this seat number after joining.
+     * Set by main() from command line args.
+     * Default is 0.
+     */
+    public int autoJoinSeatNum = 0;
+
+    /**
      * Features supported by this built-in JSettlers robot client.
      * Initialized in {@link #init()}.
      * @since 2.0.00
@@ -378,6 +391,12 @@ public class SOCRobotClient extends SOCDisplaylessPlayerClient
             put(SOCVersion.toCmd
                 (Version.versionNumber(), Version.version(), Version.buildnum(), cliFeats.getEncodedList(), null));
             put(SOCImARobot.toCmd(nickname, serverConnectInfo.robotCookie, rbclass));
+
+            if (autoJoinGameName != null)
+            {
+                try { Thread.sleep(500); } catch (InterruptedException e) {}
+                put(SOCJoinGame.toCmd(nickname, password, SOCMessage.EMPTYSTR, autoJoinGameName));
+            }
         }
         catch (Exception e)
         {
@@ -989,6 +1008,12 @@ public class SOCRobotClient extends SOCDisplaylessPlayerClient
          * sit down to play
          */
         Integer pn = seatRequests.get(mes.getGame());
+
+        if (pn == null && autoJoinGameName != null && autoJoinGameName.equals(mes.getGame()))
+        {
+            // Use the requested seat number if available
+            pn = autoJoinSeatNum;
+        }
 
         try
         {
@@ -1606,6 +1631,10 @@ public class SOCRobotClient extends SOCDisplaylessPlayerClient
 
         SOCRobotClient ex1 = new SOCRobotClient
             (new ServerConnectInfo(args[0], Integer.parseInt(args[1]), args[4]), args[2], args[3]);
+        if (args.length >= 6)
+            ex1.autoJoinGameName = args[5];
+        if (args.length >= 7)
+            ex1.autoJoinSeatNum = Integer.parseInt(args[6]);
         ex1.init();
     }
 
