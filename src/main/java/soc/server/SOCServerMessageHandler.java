@@ -1226,6 +1226,79 @@ public class SOCServerMessageHandler
                 /// Check the time remaining for this game
                 processDebugCommand_gameStats(c, ga, true);
             }
+            else if (cmdTxtUC.startsWith("*ADDBOT"))
+            {
+                // Syntax: *ADDBOT [FAST|SMART] [SEAT]
+                String[] args = cmdTxtUC.split(" ");
+                boolean wantFast = false;
+                int seat = -1;
+
+                for (int i = 1; i < args.length; i++)
+                {
+                    String arg = args[i];
+                    if (arg.equals("FAST") || arg.equals("DROID"))
+                        wantFast = true;
+                    else if (arg.equals("SMART") || arg.equals("ROBOT"))
+                        wantFast = false;
+                    else
+                    {
+                        try {
+                            seat = Integer.parseInt(arg);
+                        } catch (NumberFormatException e) {
+                            // ignore
+                        }
+                    }
+                }
+
+                Connection botToInvite = null;
+                synchronized (srv.robots)
+                {
+                    for (Connection r : srv.robots)
+                    {
+                        if (gameList.isMember(r, gaName))
+                            continue;
+
+                        String rName = r.getData();
+                        boolean isDroid = (rName != null) && rName.toLowerCase().startsWith("droid");
+                        
+                        if (wantFast == isDroid)
+                        {
+                            botToInvite = r;
+                            break;
+                        }
+                    }
+                }
+
+                if (botToInvite != null)
+                {
+                    if (seat == -1)
+                    {
+                        for (int s = 0; s < ga.maxPlayers; s++)
+                        {
+                            if (ga.isSeatVacant(s))
+                            {
+                                seat = s;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (seat != -1 && ga.isSeatVacant(seat))
+                    {
+                         srv.messageToPlayer(botToInvite, gaName, SOCServer.PN_OBSERVER, 
+                             new SOCBotJoinGameRequest(gaName, seat, ga.getGameOptions()));
+                         srv.messageToPlayer(c, gaName, SOCServer.PN_NON_EVENT, "Invited bot " + botToInvite.getData());
+                    }
+                    else
+                    {
+                        srv.messageToPlayer(c, gaName, SOCServer.PN_NON_EVENT, "No vacant seat for bot.");
+                    }
+                }
+                else
+                {
+                    srv.messageToPlayer(c, gaName, SOCServer.PN_NON_EVENT, "No available " + (wantFast ? "Fast" : "Smart") + " bot found.");
+                }
+            }
             else if (cmdTxtUC.startsWith("*VERSION*"))
             {
                 srv.messageToPlayer(c, gaName, SOCServer.PN_REPLY_TO_UNDETERMINED,
