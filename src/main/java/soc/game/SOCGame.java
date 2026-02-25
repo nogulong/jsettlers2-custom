@@ -5440,10 +5440,18 @@ public class SOCGame implements Serializable, Cloneable
         /**
          * choose who goes first
          */
-        do
+        int forceStartSeat = Integer.getInteger("jsettlers.forceStartSeat", -1);
+        if (forceStartSeat >= 0 && forceStartSeat < maxPlayers && !isSeatVacant(forceStartSeat))
         {
-            currentPlayerNumber = Math.abs(rand.nextInt() % maxPlayers);
-        } while (isSeatVacant(currentPlayerNumber));
+            currentPlayerNumber = forceStartSeat;
+        }
+        else
+        {
+            do
+            {
+                currentPlayerNumber = Math.abs(rand.nextInt() % maxPlayers);
+            } while (isSeatVacant(currentPlayerNumber));
+        }
 
         setFirstPlayer(currentPlayerNumber);
     }

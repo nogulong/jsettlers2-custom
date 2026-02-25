@@ -420,6 +420,13 @@ public class SOCServer extends Server
     public static final String PROP_JSETTLERS_STARTROBOTS = "jsettlers.startrobots";
 
     /**
+     * Property <tt>jsettlers.startrobots.fast</tt> to specify how many of the started robots
+     * should be "fast" (droids). The rest will be "smart" (robots).
+     * If not specified, defaults to 70% of {@link #PROP_JSETTLERS_STARTROBOTS}.
+     */
+    public static final String PROP_JSETTLERS_STARTROBOTS_FAST = "jsettlers.startrobots.fast";
+
+    /**
      * Open Registration Mode boolean property {@code jsettlers.accounts.open}.
      * If this property is Y, anyone can self-register to create their own user accounts.
      * Otherwise only users in {@link #PROP_JSETTLERS_ACCOUNTS_ADMINS} can
@@ -2565,8 +2572,19 @@ public class SOCServer extends Server
                 final int rcount = Integer.parseInt(props.getProperty(PROP_JSETTLERS_STARTROBOTS));
                 final int hcount = maxConnections - rcount;  // max human client connection count
                 final int reserve = Math.max(rcount, SOC_MAXCONN_HUMANS_RESERVE);
-                int fast30 = (int) (0.30f * rcount);
-                boolean loadSuccess = setupLocalRobots(fast30, rcount - fast30);  // each bot gets a thread
+
+                int numFast;
+                if (props.containsKey(PROP_JSETTLERS_STARTROBOTS_FAST))
+                {
+                    numFast = Integer.parseInt(props.getProperty(PROP_JSETTLERS_STARTROBOTS_FAST));
+                }
+                else
+                {
+                    // Default behavior (matches original code): 30% fast, 70% smart
+                    numFast = (int) (0.30f * rcount);
+                }
+
+                boolean loadSuccess = setupLocalRobots(numFast, rcount - numFast);  // each bot gets a thread
                 if (! loadSuccess)
                 {
                     System.err.println("** Cannot start the requested robots. Check server properties and classpath.");
