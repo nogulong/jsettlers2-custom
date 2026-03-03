@@ -1,4 +1,14 @@
-# ![logo](doc/graf/Logo32.png?raw=true) Java Settlers
+# ![logo](doc/graf/Logo32.png?raw=true) Java Settlers (Research Fork)
+
+This is a fork of [JSettlers2](https://github.com/jdmonin/JSettlers2/)
+
+### 追加機能 / Added Features
+
+- **`*ADDBOT` コマンド**: クライアント側のチャット欄から, 指定した種類のボットを特定の座席に招待できるようにしました.
+  - `*ADDBOT [FAST|SMART] [SEAT_ID]` (例: `*ADDBOT SMART 2`)
+- **開始座席の固定**: ゲーム開始時の座席（プレイヤーの順番）を指定可能にしました.
+
+---
 
 A desktop client-server version of Settlers of Catan
 
