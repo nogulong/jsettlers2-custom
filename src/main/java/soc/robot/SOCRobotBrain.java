@@ -160,7 +160,7 @@ public class SOCRobotBrain extends Thread
      * Use .01 for a shorter delay (1% of normal pauses).
      * @since 2.0.00
      */
-    public static float BOTS_ONLY_FAST_PAUSE_FACTOR = .25f;
+    public static float BOTS_ONLY_FAST_PAUSE_FACTOR = .01f;
 
     /**
      * If true, always pause faster by setting {@link #pauseFaster} for every new game, not just 6-player games.
